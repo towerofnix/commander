@@ -126,7 +126,10 @@ class Program {
           char = code[charIndex]
           if (charIndex >= code.length) break
 
-          if (char === ' ') break
+          if (char === ' ') {
+            charIndex--
+            break
+          }
 
           name += char
         }
@@ -147,7 +150,6 @@ class Program {
       if (char === '^') {
         // Getting name.
         let name = ''
-        const oldCharIndex = charIndex
 
         while (true) {
           charIndex++
@@ -168,42 +170,41 @@ class Program {
         // TODO: nested function calls (fn calls as arguments). YIKES!
         charIndex++
         const argsSliceStart = charIndex
+        let parenWeight = 0
         while (true) {
           charIndex++
           char = code[charIndex]
           if (charIndex >= code.length) break
           if (char === ')') {
-            break
+            if (parenWeight === 0) {
+              break
+            } else {
+              parenWeight--
+            }
+          }
+          if (char === '(') {
+            parenWeight++
           }
         }
         const argCode = code.slice(argsSliceStart, charIndex)
+        console.log('arg code:', argCode)
         const vars = this.doArguments(argCode, func)
         env.vars = vars
 
         const funcResults = this.compile(codeLines.join('\n'), env)
 
-        // THISISACODETAG: Hmm, how to deal with this.. all of the above code
-        // in this section generally screams "don't copy/paste me!".. maybe a
-        // parseFunction method?
-        // (This is necessary becauese expression doesn't work with procedure
-        // calls.)
-        if (oldCharIndex === 0) {
-          console.warn('Procedure calls don\'t work any more.. oops!')
-          // for (let line of funcResults)
-          //   results.push(line)
-          //
-          // continue LINE_LOOP
-        } else {
-          const lastLine = funcResults.slice(-1)[0]
+        // Okay so SCRAPPING ALL PROCEDURE CALLS!!!!!!
+        // Will have to get new syntax.
+        // Will also have to reuse some of the above code which means
+        // separating into more methods yaaaay.
 
-          if (!lastLine) console.warn(`Function "${name}" returned nothing!`)
+        const lastLine = funcResults.slice(-1)[0]
 
-          result += lastLine.command
+        if (!lastLine) console.warn(`Function "${name}" returned nothing!`)
 
-          charIndex++
+        result += lastLine.command
 
-          // continue CHAR_LOOP
-        }
+        charIndex++
 
         continue
       }
@@ -216,7 +217,7 @@ class Program {
     return result
   }
 
-  doArguments(code, func) {
+  doArguments(code, func, environment) {
     // Separated from main compile function due to recursion.
 
     const params = func.params
@@ -249,7 +250,7 @@ class Program {
     }
 
     for (let argIndex = 0; argIndex < params.length; argIndex++) {
-      vars[params[argIndex]] = args[argIndex]
+      vars[params[argIndex]] = this.expression(args[argIndex], environment)
     }
 
     return vars
@@ -259,9 +260,15 @@ class Program {
 const p = new Program()
 console.dir(p.compile(`
 
-define greet(who)
-  Hello $who
+define foo()
+  foo
 
-say ^greet(world)
+define bar()
+  bar
+
+define both(a, b)
+  $a and $b
+
+say ^both(^foo(), ^bar())
 
 `))
