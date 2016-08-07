@@ -33,3 +33,16 @@ Procedure calls are used to insert code into multiple parts of your program. The
     [START OF LINE]^[name]()
 
 When a procedure call is found, the code that is respective to the name will be found from a program-specific function table, and inserted into the result in place of the procedure call.
+
+## [Function Calls](id:function-calls)
+
+Function calls are like [procedure calls](#procedure-calls), and they look up the code from the same table, but rather than creating new command blocks they insert the *last* line of the code into the currently being created command. The syntax is as follows:
+
+    [NOT START OF LINE]^[name]()
+
+Example usage:
+
+    define msg()
+      Hello
+
+    say ^msg(), world!

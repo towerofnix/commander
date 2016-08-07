@@ -89,7 +89,8 @@ class Program {
 
             continue LINE_LOOP
           } else {
-            console.log('Function expressions not implemented yet')
+            const lastLine = codeLines.slice(-1)[0]
+            command += lastLine
 
             charIndex++
 
@@ -111,11 +112,9 @@ class Program {
 
 console.dir(new Program(`
 
-define foo()
-  say foo
-  say bar
+define msg()
+  Hello
 
-say hi
-^foo()
+say ^msg(), world!
 
 `).compile())
