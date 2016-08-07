@@ -91,115 +91,7 @@ class Program {
         continue
       }
 
-      // Parsing command, doing expressions etc.
-      let command = ''
-      let charIndex = -1
-
-      CHAR_LOOP:
-      while (true) {
-        charIndex++
-        let char = line[charIndex]
-
-        if (charIndex >= line.length) break
-
-        // Variables
-        if (char === '$') {
-          let name = ''
-          while (true) {
-            charIndex++
-            char = line[charIndex]
-            if (charIndex >= line.length) break
-
-            if (char === ' ') break
-
-            name += char
-          }
-
-          // console.log('Variable:', name)
-          // console.log('Environment:', environment)
-          // console.log('Value:', environment.vars[name])
-
-          if (!environment.vars.hasOwnProperty(name))
-            throw new Error(`Access to undefiend variable: "${name}"`)
-
-          command += environment.vars[name]
-
-          continue
-        }
-
-        if (char === '^') {
-          // Getting name.
-          let name = ''
-          const oldCharIndex = charIndex
-
-          while (true) {
-            charIndex++
-            char = line[charIndex]
-            if (charIndex >= line.length) break
-
-            if (char === '(') break
-
-            name += char
-          }
-
-          // Getting arguments.
-          // TODO: nested function calls (fn calls as arguments). YIKES!
-          const args = []
-          let currentArg = ''
-          while (true) {
-            charIndex++
-            char = line[charIndex]
-            if (charIndex >= line.length) break
-
-            if (char === ')') {
-              if (currentArg) {
-                args.push(currentArg)
-              }
-              break
-            }
-
-            if (char === ',') {
-              args.push(currentArg)
-              currentArg = ''
-              continue
-            }
-
-            if (char === ' ' && currentArg == '') continue
-
-            currentArg += char
-          }
-
-          const func = this.functions[name]
-          const params = func.params
-          const codeLines = func.codeLines
-          const env = {vars: {}}
-
-          for (let argIndex = 0; argIndex < params.length; argIndex++) {
-            env.vars[params[argIndex]] = args[argIndex]
-          }
-
-          const funcResults = this.compile(codeLines.join('\n'), env)
-
-          if (oldCharIndex === 0) {
-            for (let line of funcResults)
-              results.push(line)
-
-            continue LINE_LOOP
-          } else {
-            const lastLine = funcResults.slice(-1)[0]
-
-            if (!lastLine) console.warn(`Function "${name}" returned nothing!`)
-
-            command += lastLine.command
-
-            charIndex++
-
-            continue CHAR_LOOP
-          }
-        }
-
-        command += char
-      }
+      const command = this.expression(line, environment)
 
       const obj = {command}
 
@@ -208,10 +100,164 @@ class Program {
 
     return results
   }
+
+  expression(code, environment = {vars: {}}) {
+    // TODO: put reused stuff in here because having identical code in multiple
+    // parts of a program is BAAAD!
+
+    // Parts of lines that should be put in here:
+    // * everything past the command name part of code lines (past first space)
+    //   (or just the whole command line)
+    // * arguments (each in a separate expression call)
+
+    let charIndex = -1
+    let result = ''
+
+    while (true) {
+      charIndex++
+      let char = code[charIndex]
+      if (charIndex >= code.length) break
+
+      // Variables
+      if (char === '$') {
+        let name = ''
+        while (true) {
+          charIndex++
+          char = code[charIndex]
+          if (charIndex >= code.length) break
+
+          if (char === ' ') break
+
+          name += char
+        }
+
+        // console.log('Variable:', name)
+        // console.log('Environment:', environment)
+        // console.log('Value:', environment.vars[name])
+
+        if (!environment.vars.hasOwnProperty(name))
+          throw new Error(`Access to undefined variable: "${name}"`)
+
+        result += environment.vars[name]
+
+        continue
+      }
+
+      // Function calls
+      if (char === '^') {
+        // Getting name.
+        let name = ''
+        const oldCharIndex = charIndex
+
+        while (true) {
+          charIndex++
+          char = code[charIndex]
+          if (charIndex >= code.length) break
+
+          if (char === '(') break
+
+          name += char
+        }
+
+        const func = this.functions[name]
+        const params = func.params
+        const codeLines = func.codeLines
+        const env = {}
+
+        // Getting arguments.
+        // TODO: nested function calls (fn calls as arguments). YIKES!
+        charIndex++
+        const argsSliceStart = charIndex
+        while (true) {
+          charIndex++
+          char = code[charIndex]
+          if (charIndex >= code.length) break
+          if (char === ')') {
+            break
+          }
+        }
+        const argCode = code.slice(argsSliceStart, charIndex)
+        const vars = this.doArguments(argCode, func)
+        env.vars = vars
+
+        const funcResults = this.compile(codeLines.join('\n'), env)
+
+        // THISISACODETAG: Hmm, how to deal with this.. all of the above code
+        // in this section generally screams "don't copy/paste me!".. maybe a
+        // parseFunction method?
+        // (This is necessary becauese expression doesn't work with procedure
+        // calls.)
+        if (oldCharIndex === 0) {
+          console.warn('Procedure calls don\'t work any more.. oops!')
+          // for (let line of funcResults)
+          //   results.push(line)
+          //
+          // continue LINE_LOOP
+        } else {
+          const lastLine = funcResults.slice(-1)[0]
+
+          if (!lastLine) console.warn(`Function "${name}" returned nothing!`)
+
+          result += lastLine.command
+
+          charIndex++
+
+          // continue CHAR_LOOP
+        }
+
+        continue
+      }
+
+      result += char
+    }
+
+    console.log('RESULT:', result)
+
+    return result
+  }
+
+  doArguments(code, func) {
+    // Separated from main compile function due to recursion.
+
+    const params = func.params
+
+    const vars = {}
+
+    const args = []
+    let currentArg = ''
+
+    let charIndex = -1
+    while (true) {
+      charIndex++
+      let char = code[charIndex]
+      if (charIndex >= code.length) {
+        if (currentArg) {
+          args.push(currentArg)
+        }
+        break
+      }
+
+      if (char === ',') {
+        args.push(currentArg)
+        currentArg = ''
+        continue
+      }
+
+      if (char === ' ' && currentArg == '') continue
+
+      currentArg += char
+    }
+
+    for (let argIndex = 0; argIndex < params.length; argIndex++) {
+      vars[params[argIndex]] = args[argIndex]
+    }
+
+    return vars
+  }
 }
 
 const p = new Program()
-console.log(p.compile(`
+console.dir(p.compile(`
 
 define greet(who)
   Hello $who
