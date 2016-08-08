@@ -148,6 +148,8 @@ class Program {
 
       // Function calls
       if (char === '^') {
+        // console.group('fn call')
+
         // Getting name.
         let name = ''
 
@@ -168,12 +170,12 @@ class Program {
 
         // Getting arguments.
         // TODO: nested function calls (fn calls as arguments). YIKES!
-        charIndex++
-        const argsSliceStart = charIndex
+        const argsSliceStart = charIndex + 1
         let parenWeight = 0
         while (true) {
           charIndex++
           char = code[charIndex]
+          // console.log('..', charIndex, char)
           if (charIndex >= code.length) break
           if (char === ')') {
             if (parenWeight === 0) {
@@ -187,7 +189,8 @@ class Program {
           }
         }
         const argCode = code.slice(argsSliceStart, charIndex)
-        console.log('arg code:', argCode)
+        // console.log('Function call:', name)
+        // console.log('Arguments code:', argCode)
         const vars = this.doArguments(argCode, func)
         env.vars = vars
 
@@ -204,7 +207,7 @@ class Program {
 
         result += lastLine.command
 
-        charIndex++
+        // console.groupEnd()
 
         continue
       }
@@ -260,15 +263,12 @@ class Program {
 const p = new Program()
 console.dir(p.compile(`
 
-define foo()
-  foo
+define kaz(x)
+  kaz? $x
 
-define bar()
-  bar
+define kek()
+  kek test
 
-define both(a, b)
-  $a and $b
-
-say ^both(^foo(), ^bar())
+say ^kaz(before ^kek() after)
 
 `))
