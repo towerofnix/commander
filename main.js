@@ -8,6 +8,77 @@ const groupFn = function(fn, label) {
 class Program {
   constructor() {
     this.functions = {}
+    this.defaultAttributes = {
+      type: 'c', auto: true, conditional: false
+    }
+  }
+
+  parseAttributes(str) {
+    const timesAppearing = {}
+    const validAttributes = [
+      'c', 'i', 'r',
+      '0', '1',
+      '!', '?'
+    ]
+    const attributes = {}
+    let contradictory
+    let overallContradictory = 0
+    const result = {}
+
+    for (let char of str) {
+      timesAppearing[char] = (timesAppearing[char] || 0) + 1
+      if (timesAppearing[char] > 1) throw new Error(
+        `In attributes "${str}" ${char} appears more than once`)
+
+      if (!validAttributes.includes(char)) throw new Error(
+        `In attributes "${str}" ${char} is an invalid attribute`)
+
+      attributes[char] = true
+    }
+
+    contradictory = 0
+    if (attributes['c']) {
+      contradictory++
+      result.type = 'c'
+    }
+    if (attributes['i']) {
+      contradictory++
+      result.type = 'i'
+    }
+    if (attributes['r']) {
+      contradictory++
+      result.type = 'r'
+    }
+    overallContradictory |= contradictory > 1
+
+    contradictory = 0
+    if (attributes['0']) {
+      contradictory++
+      result.auto = false
+    }
+    if (attributes['1']) {
+      contradictory++
+      result.auto = true
+    }
+    overallContradictory |= contradictory > 1
+
+    contradictory = 0
+    if (attributes['?']) {
+      result.conditional = true
+      contradictory++
+    }
+    if (attributes['!']) {
+      result.conditional = false
+      contradictory++
+    }
+    overallContradictory |= contradictory > 1
+
+    if (overallContradictory) throw new Error(
+      `Attributes "${str}" is contradictory`)
+
+    const withDefaults = Object.assign({}, this.defaultAttributes, result)
+
+    return withDefaults
   }
 
   compile(code, environment = {vars: {}}) {
@@ -193,6 +264,7 @@ class Program {
 
   processFunctionCall(code, environment) {
     // PROCESS PROCESS PROCESS
+
     // Getting name.
     let name = ''
 
@@ -271,3 +343,6 @@ define moreThanOneResult()
 say ^moreThanOneResult()
 
 `))
+
+console.log(p.parseAttributes('c1?'))
+console.log(p.parseAttributes('i'))
