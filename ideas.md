@@ -10,24 +10,15 @@ Considered implemented for documentation.
 
     // This is a comment.
 
-# [Function Arguments](id:function-arguments)
-
-    define ^foo(bar)
-      say $bar
-
-    foo far // say far
-
 # [Block Function Arguments](id:block-function-arguments)
-
-Requires [Function Arguments](#function-arguments).
 
 Allows blocks of code to be passed as arguments to functions.
 
-    define ^twice(fn)
+    define twice(fn)
       $fn()
       $fn()
 
-    ^twice({
+    !twice({
       say hello
     })
 
