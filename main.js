@@ -92,8 +92,12 @@ class Program {
       }
 
       if (line.startsWith('!')) {
-        const { funcResults } = this.processFunctionCall(
+        const { funcResults, name } = this.processFunctionCall(
           line.slice(1), environment)
+
+        if (funcResults.length === 0) {
+          console.warn(`Procedure call "${name}" had no results!`)
+        }
 
         for (let r of funcResults) {
           results.push(r)
@@ -159,19 +163,22 @@ class Program {
 
       // Function calls
       if (char === '^') {
-        console.group('fn call')
+        // console.group('fn call')
 
-        const { funcResults, newCharIndex } = this.processFunctionCall(
+        const { funcResults, newCharIndex, name } = this.processFunctionCall(
           code.slice(charIndex + 1), environment)
         charIndex += newCharIndex
 
         const lastLine = funcResults.slice(-1)[0]
 
+        if (funcResults.length > 1)
+          console.warn(`Function call "${name}" had more than one result!`
+                    + ' (Using last result.)')
         if (!lastLine) console.warn(`Function "${name}" returned nothing!`)
 
         result += lastLine.command
 
-        console.groupEnd()
+        // console.groupEnd()
 
         continue
       }
@@ -237,34 +244,30 @@ class Program {
       currentArg += char
     }
     const argCode = code.slice(argsSliceStart, charIndex)
-    console.log('Function name:', name)
-    console.log('Arguments:', args)
+    // console.log('Function name:', name)
+    // console.log('Arguments:', args)
 
     for (let argIndex = 0; argIndex < params.length; argIndex++) {
-      console.log('Param/arg', params[argIndex], '=', args[argIndex])
+      // console.log('Param/arg', params[argIndex], '=', args[argIndex])
       env.vars[params[argIndex]] = this.expression(args[argIndex], environment)
     }
 
     const funcResults = this.compile(codeLines.join('\n'), env)
-    return {newCharIndex: charIndex + 1, funcResults}
+    return {newCharIndex: charIndex + 1, funcResults, name}
   }
 }
 
 const p = new Program()
 console.dir(p.compile(`
 
-define saylol(x)
-  say lol $x
+define noResults()
 
-define test(y)
-  y = $y
+!noResults()
 
-define and()
-  and
+define moreThanOneResult()
+  foo
+  bar
 
-define baaaah(x, y)
-  baaaah $x baah! $y I'm a sheep
-
-!saylol(^test(before ^baaaah(a, b) after))
+say ^moreThanOneResult()
 
 `))
