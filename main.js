@@ -91,6 +91,17 @@ class Program {
         continue
       }
 
+      if (line.startsWith('!')) {
+        const { funcResults } = this.processFunctionCall(
+          line.slice(1), environment)
+
+        for (let r of funcResults) {
+          results.push(r)
+        }
+
+        continue
+      }
+
       const command = this.expression(line, environment)
 
       const obj = {command}
@@ -148,58 +159,11 @@ class Program {
 
       // Function calls
       if (char === '^') {
-        // console.group('fn call')
+        console.group('fn call')
 
-        // Getting name.
-        let name = ''
-
-        while (true) {
-          charIndex++
-          char = code[charIndex]
-          if (charIndex >= code.length) break
-
-          if (char === '(') break
-
-          name += char
-        }
-
-        const func = this.functions[name]
-        const params = func.params
-        const codeLines = func.codeLines
-        const env = {}
-
-        // Getting arguments.
-        // TODO: nested function calls (fn calls as arguments). YIKES!
-        const argsSliceStart = charIndex + 1
-        let parenWeight = 0
-        while (true) {
-          charIndex++
-          char = code[charIndex]
-          // console.log('..', charIndex, char)
-          if (charIndex >= code.length) break
-          if (char === ')') {
-            if (parenWeight === 0) {
-              break
-            } else {
-              parenWeight--
-            }
-          }
-          if (char === '(') {
-            parenWeight++
-          }
-        }
-        const argCode = code.slice(argsSliceStart, charIndex)
-        // console.log('Function call:', name)
-        // console.log('Arguments code:', argCode)
-        const vars = this.doArguments(argCode, func)
-        env.vars = vars
-
-        const funcResults = this.compile(codeLines.join('\n'), env)
-
-        // Okay so SCRAPPING ALL PROCEDURE CALLS!!!!!!
-        // Will have to get new syntax.
-        // Will also have to reuse some of the above code which means
-        // separating into more methods yaaaay.
+        const { funcResults, newCharIndex } = this.processFunctionCall(
+          code.slice(charIndex + 1), environment)
+        charIndex += newCharIndex
 
         const lastLine = funcResults.slice(-1)[0]
 
@@ -207,7 +171,7 @@ class Program {
 
         result += lastLine.command
 
-        // console.groupEnd()
+        console.groupEnd()
 
         continue
       }
@@ -220,55 +184,87 @@ class Program {
     return result
   }
 
-  doArguments(code, func, environment) {
-    // Separated from main compile function due to recursion.
+  processFunctionCall(code, environment) {
+    // PROCESS PROCESS PROCESS
+    // Getting name.
+    let name = ''
 
-    const params = func.params
-
-    const vars = {}
-
-    const args = []
-    let currentArg = ''
-
+    let char = ''
     let charIndex = -1
     while (true) {
       charIndex++
-      let char = code[charIndex]
-      if (charIndex >= code.length) {
-        if (currentArg) {
-          args.push(currentArg)
-        }
-        break
-      }
+      char = code[charIndex]
+      if (charIndex >= code.length) break
 
-      if (char === ',') {
+      if (char === '(') break
+
+      name += char
+    }
+
+    const func = this.functions[name]
+    const params = func.params
+    const codeLines = func.codeLines
+    const env = {vars: {}}
+
+    // Getting arguments.
+    const argsSliceStart = charIndex + 1
+    let parenWeight = 0
+    let currentArg = ''
+    const args = []
+    while (true) {
+      charIndex++
+      char = code[charIndex]
+      if (charIndex >= code.length) break
+      if (char === ')') {
+        if (parenWeight === 0) {
+          if (currentArg) {
+            args.push(currentArg)
+          }
+          break
+        } else {
+          parenWeight--
+        }
+      }
+      if (char === '(') {
+        parenWeight++
+      }
+      if (char === ',' && parenWeight === 0) {
         args.push(currentArg)
         currentArg = ''
         continue
       }
-
       if (char === ' ' && currentArg == '') continue
-
       currentArg += char
     }
+    const argCode = code.slice(argsSliceStart, charIndex)
+    console.log('Function name:', name)
+    console.log('Arguments:', args)
 
     for (let argIndex = 0; argIndex < params.length; argIndex++) {
-      vars[params[argIndex]] = this.expression(args[argIndex], environment)
+      console.log('Param/arg', params[argIndex], '=', args[argIndex])
+      env.vars[params[argIndex]] = this.expression(args[argIndex], environment)
     }
 
-    return vars
+    const funcResults = this.compile(codeLines.join('\n'), env)
+    return {newCharIndex: charIndex + 1, funcResults}
   }
 }
 
 const p = new Program()
 console.dir(p.compile(`
 
-define kaz(x)
-  kaz? $x
+define saylol(x)
+  say lol $x
 
-define kek()
-  kek test
+define test(y)
+  y = $y
 
-say ^kaz(before ^kek() after)
+define and()
+  and
+
+define baaaah(x, y)
+  baaaah $x baah! $y I'm a sheep
+
+!saylol(^test(before ^baaaah(a, b) after))
 
 `))
