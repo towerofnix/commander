@@ -8,6 +8,7 @@ const groupFn = function(fn, label) {
 class Program {
   constructor() {
     this.functions = {}
+    this.labels = {}
     this.defaultAttributes = {
       type: 'c', auto: true, conditional: false
     }
@@ -183,6 +184,12 @@ class Program {
         continue
       }
 
+      if (line.startsWith('@')) {
+        const labelName = line.slice(1)
+        this.labels[labelName] = results.length
+        continue
+      }
+
       let attributeStr = ''
       let charIndex = -1
       let char = ''
@@ -194,7 +201,7 @@ class Program {
           break
         }
         if (charIndex >= line.length) {
-          console.log('hmm')
+          attributeStr = ''
           break
         }
         if (char === ':') break
@@ -365,11 +372,61 @@ class Program {
     const funcResults = this.compile(codeLines.join('\n'), env)
     return {newCharIndex: charIndex + 1, funcResults, name}
   }
+
+  handleLabels(stack) {
+    // postprocessing is s c a r y
+
+    const results = []
+
+    let blockIndex = -1
+    let block
+    while (true) {
+      blockIndex++
+      block = stack[blockIndex]
+      if (blockIndex >= stack.length) break
+
+      if (!block.command) {
+        results.push(block)
+        continue
+      }
+
+      let newCommand = ''
+      let charIndex = -1
+      let char
+      while (true) {
+        charIndex++
+        char = block.command[charIndex]
+        if (charIndex >= block.command.length) break
+
+        if (char === '@') {
+          let labelName = ''
+          while (true) {
+            charIndex++
+            char = block.command[charIndex]
+            if (char === ' ') break
+            if (charIndex > block.command.length) break
+            labelName += char
+          }
+          const pos = `~ ~${this.labels[labelName] - blockIndex} ~`
+          newCommand += pos + ' '
+          continue
+        }
+
+        newCommand += char
+      }
+
+      results.push(Object.assign({}, block, {command: newCommand}))
+    }
+
+    return results
+  }
 }
 
 const p = new Program()
-const stack = p.compile(`
+let stack
+stack = p.compile(`
 
+@start
 #quartz_ore
 i0: scoreboard objectives add loopCounter dummy
 say Before loop
@@ -391,8 +448,9 @@ scoreboard players test LOOP1 loopCounter 0 0
 i0: say After loop
 #glass
 
-i1: setblock ~ ~-18 ~ redstone_block
+i1: setblock @start redstone_block
 
 `)
+stack = p.handleLabels(stack)
 console.dir(stack)
 console.log(CBU.summonStack(stack))

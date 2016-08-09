@@ -24,20 +24,3 @@ Allows blocks of code to be passed as arguments to functions.
 
     // say hello
     // say hello
-
-# [Stack Blocks](id:stack-blocks)
-
-Lines starting with `#` represent stack blocks. The specified block rather than a command block will be inserted where the line is.
-
-    #quartz_ore
-
-# [Stack Coordinate Labels](id:stack-coordinate-labels)
-
-Best with [Stack Blocks](#stack-blocks).
-
-Represents a coordinate.
-
-    setblock @label redstone_block
-
-    @label
-    #quartz_ore
