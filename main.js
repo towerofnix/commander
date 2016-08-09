@@ -177,6 +177,12 @@ class Program {
         continue
       }
 
+      if (line.startsWith('#')) {
+        const blockName = line.slice(1)
+        results.push({block: blockName})
+        continue
+      }
+
       let attributeStr = ''
       let charIndex = -1
       let char = ''
@@ -185,6 +191,10 @@ class Program {
         char = line[charIndex]
         if (char === ' ') {
           attributeStr = ''
+          break
+        }
+        if (charIndex >= line.length) {
+          console.log('hmm')
           break
         }
         if (char === ':') break
@@ -360,10 +370,28 @@ class Program {
 const p = new Program()
 const stack = p.compile(`
 
-i0: say Foo
-say We're getting there...
+#quartz_ore
+i0: scoreboard objectives add loopCounter dummy
+say Before loop
+scoreboard players set LOOP1 loopCounter 5
+setblock ~ ~2 ~ redstone_block
+#glass
 
-i1: blockdata ~ ~-2 ~ {auto: 1}
+#quartz_ore
+i0: setblock ~ ~-1 ~ netherrack 0 destroy
+scoreboard players test LOOP1 loopCounter 1 *
+?: say Loop
+?: scoreboard players remove LOOP1 loopCounter 1
+?: setblock ~ ~-5 ~ redstone_block
+scoreboard players test LOOP1 loopCounter 0 0
+?: setblock ~ ~2 ~ redstone_block
+#glass
+
+#quartz_ore
+i0: say After loop
+#glass
+
+i1: setblock ~ ~-18 ~ redstone_block
 
 `)
 console.dir(stack)
