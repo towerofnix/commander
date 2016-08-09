@@ -402,7 +402,6 @@ class Program {
     }
 
     if (environment.passedCode) {
-      console.log('yay')
       env.vars[params[params.length - 1]] = {
         codeLines: environment.passedCode,
         params: []
@@ -466,12 +465,30 @@ const p = new Program()
 let stack
 stack = p.compile(`
 
-define kar(x)
-  say before
-  !x()
-  say after
+define loop(times, main)
+  scoreboard players set LOOP loopCounter $times
+  setblock ~ ~2 ~ redstone_block
+  #glass
+  #quartz_ore
+  i0: scoreboard players remove LOOP loopCounter 1
+  scoreboard players test loopCounter LOOP 0 0
+  ?: setblock @done redstone_block
+  scoreboard players test loopCounter LOOP 1 *
+  ?: setblock @body redstone_block
+  #glass
+  @body
+  #quartz_ore
+  i0: say Loop
+  !main()
+  setblock @done redstone_block
+  #glass
+  @done
+  #quartz_ore
+  i0: say Done
+  #glass
 
-!kar():
+i0:
+!loop(5):
   say foo
 
 `)
