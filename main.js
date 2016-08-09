@@ -177,9 +177,37 @@ class Program {
         continue
       }
 
-      const command = this.expression(line, environment)
+      let attributeStr = ''
+      let charIndex = -1
+      let char = ''
+      while (true) {
+        charIndex++
+        char = line[charIndex]
+        if (char === ' ') {
+          attributeStr = ''
+          break
+        }
+        if (char === ':') break
+        attributeStr += char
+      }
 
-      const obj = {command}
+      let commandPart
+      if (attributeStr) {
+        let char = ''
+        do {
+          charIndex++
+          char = line[charIndex]
+        } while (char === ' ')
+        commandPart = line.slice(charIndex)
+      } else {
+        commandPart = line
+      }
+      const attributes = this.parseAttributes(attributeStr)
+      console.log('attributes proper:', attributes)
+
+      const command = this.expression(commandPart, environment)
+
+      const obj = Object.assign({command}, attributes)
 
       results.push(obj)
     }
@@ -332,15 +360,10 @@ class Program {
 const p = new Program()
 console.dir(p.compile(`
 
-define noResults()
+i0: say Foo
+say We're getting there...
 
-!noResults()
-
-define moreThanOneResult()
-  foo
-  bar
-
-say ^moreThanOneResult()
+i1: blockdata ~ ~-2 ~ {auto: 1}
 
 `))
 
