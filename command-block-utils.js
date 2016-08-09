@@ -2,12 +2,12 @@ const CBU = {
   dataTagSerialize(data) {
     if (typeof data === 'object') {
       if (Array.isArray(data)) {
-        const elements = data.map(x => dataTagSerialize(x))
+        const elements = data.map(x => CBU.dataTagSerialize(x))
         return `[${elements.join(',')}]`
       } else {
         const keyValues = []
         for (let prop of Object.getOwnPropertyNames(data)) {
-          keyValues.push([prop, dataTagSerialize(data[prop])])
+          keyValues.push([prop, CBU.dataTagSerialize(data[prop])])
         }
         const keyToValues = keyValues.map(e => `${e[0]}:${e[1]}`)
         return `{${keyToValues.join(',')}}`
@@ -100,7 +100,7 @@ const CBU = {
         id: 'FallingSand', Time: 1, Block: 'command_block', Data: 2,
         TileEntityData: {
           auto: true,
-          Command: `summon FallingSand ~1 ~-2 ~ ${dataTagSerialize({
+          Command: `summon FallingSand ~1 ~-2 ~ ${CBU.dataTagSerialize({
             Time: 1, Block: 'glass', Passengers: [stackData]
           })}`
         },
@@ -114,10 +114,8 @@ const CBU = {
       }]
     }
 
-    console.dir(stackData)
-
     const command = 'summon FallingSand ~ ~1 ~ '
-      + dataTagSerialize(dataTag)
+      + CBU.dataTagSerialize(dataTag)
 
     return command
   }

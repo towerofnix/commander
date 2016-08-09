@@ -358,14 +358,13 @@ class Program {
 }
 
 const p = new Program()
-console.dir(p.compile(`
+const stack = p.compile(`
 
 i0: say Foo
 say We're getting there...
 
 i1: blockdata ~ ~-2 ~ {auto: 1}
 
-`))
-
-console.log(p.parseAttributes('c1?'))
-console.log(p.parseAttributes('i'))
+`)
+console.dir(stack)
+console.log(CBU.summonStack(stack))
