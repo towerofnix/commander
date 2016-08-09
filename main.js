@@ -164,8 +164,24 @@ class Program {
       }
 
       if (line.startsWith('!')) {
+        const env = Object.assign({}, environment)
+
+        if (line.endsWith(':')) {
+          const argCodeLines = []
+          while (true) {
+            lineIndex++
+            const line = lines[lineIndex]
+            if (lineIndex >= lines.length) break
+            if (!line.startsWith('  ')) break
+            argCodeLines.push(line.slice(2))
+          }
+          env.passedCode = argCodeLines
+        }
+
+        console.log('line:', line)
+
         const { funcResults, name } = this.processFunctionCall(
-          line.slice(1), environment)
+          line.slice(1), env)
 
         if (funcResults.length === 0) {
           console.warn(`Procedure call "${name}" had no results!`)
@@ -243,6 +259,8 @@ class Program {
 
     let charIndex = -1
     let result = ''
+
+    console.log('EXPRESSION:', code)
 
     while (true) {
       charIndex++
@@ -325,7 +343,16 @@ class Program {
       name += char
     }
 
-    const func = this.functions[name]
+    let func
+    console.log(environment.vars)
+    if (environment.vars.hasOwnProperty(name)) {
+      func = environment.vars[name]
+      console.log('lel')
+    } else {
+      func = this.functions[name]
+    }
+    console.log('hi:', environment)
+    console.log('fn:', func)
     const params = func.params
     const codeLines = func.codeLines
     const env = {vars: {}}
@@ -364,9 +391,22 @@ class Program {
     // console.log('Function name:', name)
     // console.log('Arguments:', args)
 
+    console.log('test', environment.passedCode)
     for (let argIndex = 0; argIndex < params.length; argIndex++) {
-      // console.log('Param/arg', params[argIndex], '=', args[argIndex])
-      env.vars[params[argIndex]] = this.expression(args[argIndex], environment)
+      console.log('Param/arg', params[argIndex], '=', args[argIndex])
+
+      if (args[argIndex]) {
+        env.vars[params[argIndex]] = this.expression(
+          args[argIndex], environment)
+      }
+    }
+
+    if (environment.passedCode) {
+      console.log('yay')
+      env.vars[params[params.length - 1]] = {
+        codeLines: environment.passedCode,
+        params: []
+      }
     }
 
     const funcResults = this.compile(codeLines.join('\n'), env)
@@ -426,29 +466,13 @@ const p = new Program()
 let stack
 stack = p.compile(`
 
-@start
-#quartz_ore
-i0: scoreboard objectives add loopCounter dummy
-say Before loop
-scoreboard players set LOOP1 loopCounter 5
-setblock ~ ~2 ~ redstone_block
-#glass
+define kar(x)
+  say before
+  !x()
+  say after
 
-#quartz_ore
-i0: setblock ~ ~-1 ~ netherrack 0 destroy
-scoreboard players test LOOP1 loopCounter 1 *
-?: say Loop
-?: scoreboard players remove LOOP1 loopCounter 1
-?: setblock ~ ~-5 ~ redstone_block
-scoreboard players test LOOP1 loopCounter 0 0
-?: setblock ~ ~2 ~ redstone_block
-#glass
-
-#quartz_ore
-i0: say After loop
-#glass
-
-i1: setblock @start redstone_block
+!kar():
+  say foo
 
 `)
 stack = p.handleLabels(stack)

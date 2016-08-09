@@ -9,18 +9,3 @@
 Considered implemented for documentation.
 
     // This is a comment.
-
-# [Block Function Arguments](id:block-function-arguments)
-
-Allows blocks of code to be passed as arguments to functions.
-
-    define twice(fn)
-      $fn()
-      $fn()
-
-    !twice({
-      say hello
-    })
-
-    // say hello
-    // say hello
