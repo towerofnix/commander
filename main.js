@@ -172,7 +172,10 @@ class Program {
             lineIndex++
             const line = lines[lineIndex]
             if (lineIndex >= lines.length) break
-            if (!line.startsWith('  ')) break
+            if (!line.startsWith('  ')) {
+              lineIndex--
+              break
+            }
             argCodeLines.push(line.slice(2))
           }
           env.passedCode = argCodeLines
@@ -332,7 +335,10 @@ class Program {
           while (true) {
             charIndex++
             char = code[charIndex]
-            if (char === ' ') break
+            if (char === ' ') {
+              charIndex--
+              break
+            }
             if (charIndex >= code.length) break
             labelName += char
           }
@@ -495,7 +501,8 @@ class Program {
             labelName += char
           }
 
-          newCommand += `~ ~${labelPositions[labelName] - blockIndex} ~ `
+          const y = labelPositions[labelName] - blockIndex
+          newCommand += `~ ~${y} ~ `
           continue
         }
 
@@ -513,16 +520,34 @@ const p = new Program()
 let stack
 stack = p.compile(`
 
-define foo(x)
-  @hog
-  say this is a command
-  !x()
-  say @hog
+define loop(times, main)
+  scoreboard players set LOOP loopCounter $times
+  setblock ~ ~2 ~ redstone_block
+  #glass
+  @loop
+  #quartz_ore
+  i0: setblock @loop netherrack
+  scoreboard players test LOOP loopCounter 0 0
+  ?: setblock @done redstone_block
+  scoreboard players test LOOP loopCounter 1 *
+  ?: scoreboard players remove LOOP loopCounter 1
+  ?: setblock @body redstone_block
+  #glass
+  @body
+  #quartz_ore
+  i0: setblock @body netherrack
+  !main()
+  setblock @loop redstone_block
+  #glass
+  @done
+  #quartz_ore
+  i0: setblock @done netherrack
 
-!foo():
-  say bar
-  @hog
-  say OVERWRITTEN NOW!
+i0:
+say before loop
+!loop(5):
+  say in loop
+say after loop
 
 `)
 console.dir(stack)
