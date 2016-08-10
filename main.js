@@ -549,7 +549,16 @@ define loop(times, main)
 //   say in loop
 // say after loop
 
-say bwahaha, that's a comment
+define foo(x):
+  !x()
+
+say a
+!foo():
+  say b
+  !foo():
+    say c
+  say d
+say e
 
 `)
 console.dir(stack)
