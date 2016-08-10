@@ -18,6 +18,21 @@ class Program {
     this.builtinFunctions = {
       chars(str, start, end) {
         return str.slice(+start - 1, +end)
+      },
+      random() {
+        return '' + Math.floor(Math.random() * 1000000)
+      },
+      add(x, ...numbers) {
+        return numbers.reduce((a, b) => +a + +b, +x)
+      },
+      sub(x, ...numbers) {
+        return numbers.reduce((a, b) => +a - +b, +x)
+      },
+      mul(x, ...numbers) {
+        return numbers.reduce((a, b) => +a * +b, +x)
+      },
+      div(x, ...numbers) {
+        return numbers.reduce((a, b) => +a / +b, +x)
       }
     }
   }
@@ -166,7 +181,10 @@ class Program {
         }
 
         // Storing function
-        this.functions[name] = {codeLines, params}
+        this.functions[name] = {
+          codeLines, params,
+          oldVars: Object.assign({}, environment.vars)
+        }
 
         continue
       }
@@ -234,7 +252,11 @@ class Program {
         }
         charIndex++
         let value = this.expression(line.slice(charIndex), environment)
-        environment.vars[varName] = value
+        if (environment.vars.hasOwnProperty(varName)) {
+          environment.vars[varName].value = value
+        } else {
+          environment.vars[varName] = {value}
+        }
         continue
       }
 
@@ -289,8 +311,6 @@ class Program {
     //   (or just the whole command line)
     // * arguments (each in a separate expression call)
 
-    if (code === 'RANDOM') return '' + Math.floor(Math.random() * 1000000)
-
     let charIndex = -1
     let result = ''
 
@@ -326,7 +346,7 @@ class Program {
         if (!environment.vars.hasOwnProperty(name))
           throw new Error(`Access to undefined variable: "${name}"`)
 
-        result += environment.vars[name]
+        result += environment.vars[name].value
 
         continue
       }
@@ -401,7 +421,7 @@ class Program {
 
     let func
     if (environment.vars.hasOwnProperty(name)) {
-      func = environment.vars[name]
+      func = environment.vars[name].value
     } else if (this.functions.hasOwnProperty(name)) {
       func = this.functions[name]
     } else if (this.builtinFunctions.hasOwnProperty(name)) {
@@ -412,7 +432,7 @@ class Program {
     const params = func.params
     const codeLines = func.codeLines
     const env = {
-      vars: {},
+      vars: func.oldVars,
       labelSafe: 'safe-' + Math.random()
     }
 
@@ -460,15 +480,15 @@ class Program {
         console.log('Param/arg', params[argIndex], '=', args[argIndex])
 
         if (args[argIndex]) {
-          env.vars[params[argIndex]] = argsEvaluated[argIndex]
+          env.vars[params[argIndex]] = {value: argsEvaluated[argIndex]}
         }
       }
 
       if (environment.passedCode) {
-        env.vars[params[params.length - 1]] = {
+        env.vars[params[params.length - 1]] = {value: {
           codeLines: environment.passedCode,
           params: []
-        }
+        }}
       }
 
       funcResults = this.compile(codeLines.join('\n'), env)
@@ -579,8 +599,15 @@ define loop(times, main)
 //   say in loop
 // say after loop
 
-// Get a 3 digit random number.
-say ^chars(RANDOM, 1, 3)
+=n 0
+
+define increment():
+  =n ^add($n, 1)
+  say $n
+
+!increment()
+!increment()
+!increment()
 
 `)
 console.dir(stack)
