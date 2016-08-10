@@ -214,6 +214,25 @@ class Program {
         continue
       }
 
+      if (line.startsWith('=')) {
+        let varName = ''
+        let charIndex = 0
+        while (true) {
+          charIndex++
+          const char = line[charIndex]
+          if (charIndex >= line.length) break
+          if (char === ' ') break
+          varName += char
+        }
+        charIndex++
+        let value = line.slice(charIndex)
+        if (value === 'RANDOM') {
+          value = '' + Math.random()
+        }
+        environment.vars[varName] = value
+        continue
+      }
+
       let attributeStr = ''
       let charIndex = -1
       let char = ''
@@ -549,16 +568,8 @@ define loop(times, main)
 //   say in loop
 // say after loop
 
-define foo(x):
-  !x()
-
-say a
-!foo():
-  say b
-  !foo():
-    say c
-  say d
-say e
+=foo RANDOM
+say the random number at compile time is: $foo
 
 `)
 console.dir(stack)
