@@ -201,8 +201,13 @@ class Program {
       }
 
       if (line.startsWith('@')) {
-        const labelName = line.slice(1)
-        this.labels[labelName] = results.length
+        let labelName
+        if (environment.labelSafe) {
+          labelName = `__${environment.labelSafe}__${line.slice(1)}`
+        } else {
+          labelName = line.slice(1)
+        }
+        results.push({label: labelName})
         continue
       }
 
@@ -236,7 +241,7 @@ class Program {
         commandPart = line
       }
       const attributes = this.parseAttributes(attributeStr)
-      console.log('attributes proper:', attributes)
+      // console.log('attributes proper:', attributes)
 
       const command = this.expression(commandPart, environment)
 
@@ -260,7 +265,9 @@ class Program {
     let charIndex = -1
     let result = ''
 
+    console.log('-')
     console.log('EXPRESSION:', code)
+    console.log('ENVIRONMENT:', environment)
 
     while (true) {
       charIndex++
@@ -317,6 +324,24 @@ class Program {
         continue
       }
 
+      // Labels - this is to add special codes for each scope kinda.
+      // To avoid passed functions overwriting labels etc blah blah
+      if (environment.labelSafe) {
+        if (char === '@') {
+          let labelName = ''
+          while (true) {
+            charIndex++
+            char = code[charIndex]
+            if (char === ' ') break
+            if (charIndex >= code.length) break
+            labelName += char
+          }
+          console.log('foo:', labelName)
+          result += '@__' + environment.labelSafe + '__' + labelName
+          continue
+        }
+      }
+
       result += char
     }
 
@@ -355,7 +380,10 @@ class Program {
     console.log('fn:', func)
     const params = func.params
     const codeLines = func.codeLines
-    const env = {vars: {}}
+    const env = {
+      vars: {},
+      labelSafe: 'safe-' + Math.random()
+    }
 
     // Getting arguments.
     const argsSliceStart = charIndex + 1
@@ -417,11 +445,31 @@ class Program {
 
     const results = []
 
+
+    let labelPositions = {}
+
+    // Set up label positions
     let blockIndex = -1
-    let block
+    let labelCount = 0
     while (true) {
       blockIndex++
-      block = stack[blockIndex]
+      const block = stack[blockIndex]
+      if (blockIndex >= stack.length) break
+      if (block.label) {
+        // Labels aren't actual blocks so ignore them in the position.
+        labelPositions[block.label] = blockIndex - labelCount
+        labelCount++
+      }
+    }
+
+    // Remove label "blocks"
+    stack = stack.filter(t => !t.label)
+
+    // Replace inline-labels with the correct relative positions
+    blockIndex = -1
+    while (true) {
+      blockIndex++
+      const block = stack[blockIndex]
       if (blockIndex >= stack.length) break
 
       if (!block.command) {
@@ -443,11 +491,11 @@ class Program {
             charIndex++
             char = block.command[charIndex]
             if (char === ' ') break
-            if (charIndex > block.command.length) break
+            if (charIndex >= block.command.length) break
             labelName += char
           }
-          const pos = `~ ~${this.labels[labelName] - blockIndex} ~`
-          newCommand += pos + ' '
+
+          newCommand += `~ ~${labelPositions[labelName] - blockIndex} ~ `
           continue
         }
 
@@ -465,33 +513,19 @@ const p = new Program()
 let stack
 stack = p.compile(`
 
-define loop(times, main)
-  scoreboard players set LOOP loopCounter $times
-  setblock ~ ~2 ~ redstone_block
-  #glass
-  #quartz_ore
-  i0: scoreboard players remove LOOP loopCounter 1
-  scoreboard players test loopCounter LOOP 0 0
-  ?: setblock @done redstone_block
-  scoreboard players test loopCounter LOOP 1 *
-  ?: setblock @body redstone_block
-  #glass
-  @body
-  #quartz_ore
-  i0: say Loop
-  !main()
-  setblock @done redstone_block
-  #glass
-  @done
-  #quartz_ore
-  i0: say Done
-  #glass
+define foo(x)
+  @hog
+  say this is a command
+  !x()
+  say @hog
 
-i0:
-!loop(5):
-  say foo
+!foo():
+  say bar
+  @hog
+  say OVERWRITTEN NOW!
 
 `)
+console.dir(stack)
 stack = p.handleLabels(stack)
 console.dir(stack)
 console.log(CBU.summonStack(stack))
