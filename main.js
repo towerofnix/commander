@@ -16,8 +16,8 @@ class Program {
     // TODO: builtinFunctions shouldn't need to be created with every Program
     // instance
     this.builtinFunctions = {
-      add3(n) {
-        return +n + 3
+      chars(str, start, end) {
+        return str.slice(+start - 1, +end)
       }
     }
   }
@@ -233,10 +233,7 @@ class Program {
           varName += char
         }
         charIndex++
-        let value = line.slice(charIndex)
-        if (value === 'RANDOM') {
-          value = '' + Math.random()
-        }
+        let value = this.expression(line.slice(charIndex), environment)
         environment.vars[varName] = value
         continue
       }
@@ -291,6 +288,8 @@ class Program {
     // * everything past the command name part of code lines (past first space)
     //   (or just the whole command line)
     // * arguments (each in a separate expression call)
+
+    if (code === 'RANDOM') return '' + Math.floor(Math.random() * 1000000)
 
     let charIndex = -1
     let result = ''
@@ -451,16 +450,17 @@ class Program {
 
     let funcResults
 
+    const argsEvaluated = args.map(e => this.expression(e, environment))
+
     if (func instanceof Function) {
       console.log('yaaay!')
-      funcResults = [{command: func(...args)}]
+      funcResults = [{command: func(...argsEvaluated)}]
     } else {
       for (let argIndex = 0; argIndex < params.length; argIndex++) {
         console.log('Param/arg', params[argIndex], '=', args[argIndex])
 
         if (args[argIndex]) {
-          env.vars[params[argIndex]] = this.expression(
-            args[argIndex], environment)
+          env.vars[params[argIndex]] = argsEvaluated[argIndex]
         }
       }
 
@@ -579,7 +579,8 @@ define loop(times, main)
 //   say in loop
 // say after loop
 
-say ^add3(7)
+// Get a 3 digit random number.
+say ^chars(RANDOM, 1, 3)
 
 `)
 console.dir(stack)
