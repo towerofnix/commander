@@ -487,7 +487,8 @@ class Program {
       if (environment.passedCode) {
         env.vars[params[params.length - 1]] = {value: {
           codeLines: environment.passedCode,
-          params: []
+          params: [],
+          oldVars: environment.vars
         }}
       }
 
@@ -570,17 +571,20 @@ const p = new Program()
 let stack
 stack = p.compile(`
 
+=loops 0
+
 define loop(times, main)
-  scoreboard players set LOOP loopCounter $times
+  =loops ^add($loops, 1)
+  scoreboard players set LOOP$loops loopCounter $times
   setblock ~ ~2 ~ redstone_block
   #glass
   @loop
   #quartz_ore
   i0: setblock @loop netherrack
-  scoreboard players test LOOP loopCounter 0 0
+  scoreboard players test LOOP$loops loopCounter 0 0
   ?: setblock @done redstone_block
-  scoreboard players test LOOP loopCounter 1 *
-  ?: scoreboard players remove LOOP loopCounter 1
+  scoreboard players test LOOP$loops loopCounter 1 *
+  ?: scoreboard players remove LOOP$loops loopCounter 1
   ?: setblock @body redstone_block
   #glass
   @body
@@ -593,21 +597,14 @@ define loop(times, main)
   #quartz_ore
   i0: setblock @done netherrack
 
-// i0:
-// say before loop
-// !loop(5):
-//   say in loop
-// say after loop
-
-=n 0
-
-define increment():
-  =n ^add($n, 1)
-  say $n
-
-!increment()
-!increment()
-!increment()
+i0:
+say before main
+!loop(5):
+  say before nested
+  !loop(3):
+    say in nested
+  say after nested
+say after main
 
 `)
 console.dir(stack)
