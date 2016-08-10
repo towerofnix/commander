@@ -12,6 +12,14 @@ class Program {
     this.defaultAttributes = {
       type: 'c', auto: true, conditional: false
     }
+
+    // TODO: builtinFunctions shouldn't need to be created with every Program
+    // instance
+    this.builtinFunctions = {
+      add3(n) {
+        return +n + 3
+      }
+    }
   }
 
   parseAttributes(str) {
@@ -380,7 +388,6 @@ class Program {
 
     // Getting name.
     let name = ''
-
     let char = ''
     let charIndex = -1
     while (true) {
@@ -394,15 +401,15 @@ class Program {
     }
 
     let func
-    console.log(environment.vars)
     if (environment.vars.hasOwnProperty(name)) {
       func = environment.vars[name]
-      console.log('lel')
-    } else {
+    } else if (this.functions.hasOwnProperty(name)) {
       func = this.functions[name]
+    } else if (this.builtinFunctions.hasOwnProperty(name)) {
+      func = this.builtinFunctions[name]
+    } else {
+      throw new Error(`Attempt to call nonexistant function "${name}"`)
     }
-    console.log('hi:', environment)
-    console.log('fn:', func)
     const params = func.params
     const codeLines = func.codeLines
     const env = {
@@ -441,27 +448,31 @@ class Program {
       currentArg += char
     }
     const argCode = code.slice(argsSliceStart, charIndex)
-    // console.log('Function name:', name)
-    // console.log('Arguments:', args)
 
-    console.log('test', environment.passedCode)
-    for (let argIndex = 0; argIndex < params.length; argIndex++) {
-      console.log('Param/arg', params[argIndex], '=', args[argIndex])
+    let funcResults
 
-      if (args[argIndex]) {
-        env.vars[params[argIndex]] = this.expression(
-          args[argIndex], environment)
+    if (func instanceof Function) {
+      console.log('yaaay!')
+      funcResults = [{command: func(...args)}]
+    } else {
+      for (let argIndex = 0; argIndex < params.length; argIndex++) {
+        console.log('Param/arg', params[argIndex], '=', args[argIndex])
+
+        if (args[argIndex]) {
+          env.vars[params[argIndex]] = this.expression(
+            args[argIndex], environment)
+        }
       }
-    }
 
-    if (environment.passedCode) {
-      env.vars[params[params.length - 1]] = {
-        codeLines: environment.passedCode,
-        params: []
+      if (environment.passedCode) {
+        env.vars[params[params.length - 1]] = {
+          codeLines: environment.passedCode,
+          params: []
+        }
       }
-    }
 
-    const funcResults = this.compile(codeLines.join('\n'), env)
+      funcResults = this.compile(codeLines.join('\n'), env)
+    }
     return {newCharIndex: charIndex + 1, funcResults, name}
   }
 
@@ -568,8 +579,7 @@ define loop(times, main)
 //   say in loop
 // say after loop
 
-=foo RANDOM
-say the random number at compile time is: $foo
+say ^add3(7)
 
 `)
 console.dir(stack)
