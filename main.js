@@ -90,7 +90,7 @@ class Program {
     for (let lineIndex = 0; lineIndex < lines.length; lineIndex++) {
       let line = lines[lineIndex]
 
-      if (line === '')
+      if (line === '' || line.startsWith('//'))
         continue
 
       if (line.startsWith('define')) {
@@ -543,11 +543,13 @@ define loop(times, main)
   #quartz_ore
   i0: setblock @done netherrack
 
-i0:
-say before loop
-!loop(5):
-  say in loop
-say after loop
+// i0:
+// say before loop
+// !loop(5):
+//   say in loop
+// say after loop
+
+say bwahaha, that's a comment
 
 `)
 console.dir(stack)
