@@ -3,7 +3,6 @@ importScripts('../command-block-utils.js', '../main.js')
 const log = console.log
 
 onmessage = function(e) {
-
   if (e.data === 'ENABLE_DEBUG') {
     console.log = log
     console.log('Enabled console logging!')

@@ -176,8 +176,10 @@ class Program {
           if (lineIndex > lines.length)
             break
 
-          if (!line.startsWith('  '))
+          if (!line.startsWith('  ') && line !== '') {
+            lineIndex--
             break
+          }
 
           codeLines.push(line.slice(2))
         }
@@ -378,7 +380,8 @@ class Program {
       // Labels - this is to add special codes for each scope kinda.
       // To avoid passed functions overwriting labels etc blah blah
       if (environment.labelSafe) {
-        if (char === '@') {
+        if (char === '-' && code[charIndex + 1] === '>') continue
+        if (char === '>' && code[charIndex - 1] === '-') {
           let labelName = ''
           while (true) {
             charIndex++
@@ -390,8 +393,7 @@ class Program {
             if (charIndex >= code.length) break
             labelName += char
           }
-          console.log('foo:', labelName)
-          result += '@__' + environment.labelSafe + '__' + labelName
+          result += '->__' + environment.labelSafe + '__' + labelName
           continue
         }
       }
@@ -544,7 +546,9 @@ class Program {
         char = block.command[charIndex]
         if (charIndex >= block.command.length) break
 
-        if (char === '@') {
+        if (char === '-' && block.command[charIndex + 1] === '>') continue
+
+        if (char === '>' && block.command[charIndex - 1] === '-') {
           let labelName = ''
           while (true) {
             charIndex++
