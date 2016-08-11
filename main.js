@@ -271,8 +271,7 @@ class Program {
 
       const isNonWhitespace = !!(line.split(' ').filter(c => c !== ' ').length)
       if (line.startsWith(' ') && isNonWhitespace) {
-        console.log(line.length)
-        throw new Error(`Unexpected whitespace: "${line}"`)
+        console.warn(`Unexpected whitespace: "${line}"`)
       }
 
       let attributeStr = ''
