@@ -9,7 +9,7 @@
     <div id='help'>
       <p>Need help or info? Hover!</p>
       <h1>Initial Commit</h1>
-      <p>This is an experimental project designed to make creating command block creations much easier and robust.</p>
+      <p>This is an experimental project called Commander (no, not <a href='https://dev.bukkit.org/bukkit-plugins/commander/'>the plugin</a>) designed to make creating command block creations much easier and robust.</p>
       <p>It was <em>very</em> much inspired in many ways by <a href='http://commandstudio.github.io/commandstudio/' target='_blank'>CommandStudio</a>.</p>
 
       <h1 id='documentation'>Documentation</h1>
@@ -31,7 +31,7 @@
       </ol>
       <p>You really don't need much knowledge about redstone because this project basically discourages the use of it. And it's not like you even <em>can</em> use redstone here, so..</p>
       <p>With that out of the way you should get yourself a command block.</p>
-      <p>Chances are if you're reading this paragraph you're somebody who stuobbornly decided to follow along despite not knowing how to get a command block. Just type in <code>/give @p command_block</code> in the Minecraft chat.</p>
+      <p>Chances are if you're reading this paragraph you're somebody who stubbornly decided to follow along despite not knowing how to get a command block. Just type in <code>/give @p command_block</code> in the Minecraft chat.</p>
       <p>Inside of the command block, paste the string you got in the output textarea.</p>
       <p>Get your command block activated somehow. Try to avoid having anything above or to the east of the command block. That messes things up.</p>
       <p>With any luck a big stack of command blocks will be forming!</p>
@@ -99,7 +99,7 @@
       <p>As you might expect, trying to access a variable that doesn't exist will throw you an error:</p>
       <pre contenteditable><code>
         // Error!
-        say $nonexistant
+        say $nonexistent
       </code></pre>
       <p>The rest is for the more technical, so you've been warned!</p>
       <p><strong>Functions only have access to previously declared variables.</strong> For example:</p>
@@ -112,7 +112,7 @@
         // Variable doesn't exist, error.
         !foo()
       </code></pre>
-      <p><strong><code>=</code> will always try to change a variable, rather than createone.</strong> This is only really noticable with functions. For example:</p>
+      <p><strong><code>=</code> will always try to change a variable, rather than create one.</strong> This is only really noticeable with functions. For example:</p>
       <pre contenteditable><code>
         =x hi
 
@@ -157,7 +157,7 @@
       <!-- TODO: Make a full reference.. -->
 
       <h2 id='labels-and-blocks'>Labels and Blocks</h2>
-      <p><strong>Labels</strong> are one of the most helpful things of this project. The simplest way to describe it is as a "goto". Labels represent positions in a stack, and you can manipulate <strong>blocks</strong> with them. Here's an example:</p>
+      <p><strong>Labels</strong> are one of the most helpful things of this project. Labels represent positions in a stack, and you can manipulate <strong>blocks</strong> with them. Here's an example:</p>
       <pre contenteditable><code>
         i0: say A
         setblock @b redstone_block
@@ -174,7 +174,7 @@
         setblock @c redstone_block
         #glass
       </code></pre>
-      <p>What do you think this will do? Here's your answer:</p>
+      <p>What do you think this will do? Here's the answer:</p>
       <ol>
         <li>Say "A".</li>
         <li>Activate B by replacing the respective <code>quartz_ore</code> block with a <code>redstone_block</code>.</li>
