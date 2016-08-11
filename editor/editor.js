@@ -47,16 +47,19 @@ textarea.addEventListener('keydown', e => {
     // When the tab key is pressed, insert 2 spaces at the cursor, unless
     // the shift key is pressed, in which case unindent.
 
-    if (!e.shiftKey) {
-      const start = input.selectionStart
-      const end = input.selectionEnd
-      const value = input.value
-      input.value = value.substring(0, start) + '  ' + value.substring(end)
-      input.selectionStart = end + 2
-      input.selectionEnd = end + 2
-    } else {
-      unindent()
+    if (!e.ctrlKey) {
+      if (!e.shiftKey) {
+        const start = input.selectionStart
+        const end = input.selectionEnd
+        const value = input.value
+        input.value = value.substring(0, start) + '  ' + value.substring(end)
+        input.selectionStart = end + 2
+        input.selectionEnd = end + 2
+      } else {
+        unindent()
+      }
     }
+
     e.preventDefault()
   } else if (e.keyCode == 13) {
     const upToCursor = value.substring(0, start)
