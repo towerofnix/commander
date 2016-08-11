@@ -84,8 +84,10 @@ textarea.select()
 textarea.selectionStart = localStorage.sel
 textarea.selectionEnd = localStorage.sel
 textarea.scrollTop = localStorage.scroll
+textarea.value = localStorage.save
 
 onbeforeunload = function() {
   localStorage.sel = textarea.selectionStart
   localStorage.scroll = textarea.scrollTop
+  localStorage.save = textarea.value
 }
