@@ -567,6 +567,7 @@ class Program {
   }
 }
 
+/*
 const p = new Program()
 let stack
 stack = p.compile(`
@@ -611,3 +612,4 @@ console.dir(stack)
 stack = p.handleLabels(stack)
 console.dir(stack)
 console.log(CBU.summonStack(stack))
+*/

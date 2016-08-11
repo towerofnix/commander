@@ -1,0 +1,53 @@
+body, html {
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  margin: 0;
+}
+
+body {
+  background: #E9E9E9;
+}
+
+#main {
+  display: flex;
+  background: #979797;
+  height: 100%;
+  justify-content: center;
+}
+
+#input-container {
+  padding: 20px 0;
+  height: 100%;
+  box-sizing: border-box;
+  background: #EEE;
+  width: 700px;
+  text-align: center;
+  box-shadow: 0 0 7px rgba(0, 0, 0, 0.5);
+}
+
+#input {
+  height: 100%;
+  background: rgba(255, 255, 255, 0.75);
+  border: 0;
+  resize: none;
+  line-height: 18px;
+  font-size: 13px;
+}
+
+#output-container {
+  width: 100%;
+  background: white;
+}
+
+#foo {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+#foo > textarea {
+  border: 0;
+  box-shadow: 0 0 8px rgba(0, 0, 0, 0.3);
+}
