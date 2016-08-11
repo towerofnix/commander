@@ -81,10 +81,10 @@ textarea.addEventListener('keydown', e => {
 })
 
 textarea.select()
-textarea.selectionStart = localStorage.sel
-textarea.selectionEnd = localStorage.sel
-textarea.scrollTop = localStorage.scroll
-textarea.value = localStorage.save
+textarea.selectionStart = localStorage.sel || 0
+textarea.selectionEnd = localStorage.sel || 0
+textarea.scrollTop = localStorage.scroll || 0
+textarea.value = localStorage.save || ''
 
 onbeforeunload = function() {
   localStorage.sel = textarea.selectionStart
