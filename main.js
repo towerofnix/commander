@@ -1,3 +1,5 @@
+// See editor/compile.worker.js for usage!
+
 const groupFn = function(fn, label) {
   console.group(label || 'Group-function')
   const ret = fn()
@@ -566,50 +568,3 @@ class Program {
     return results
   }
 }
-
-/*
-const p = new Program()
-let stack
-stack = p.compile(`
-
-=loops 0
-
-define loop(times, main)
-  =loops ^add($loops, 1)
-  scoreboard players set LOOP$loops loopCounter $times
-  setblock ~ ~2 ~ redstone_block
-  #glass
-  @loop
-  #quartz_ore
-  i0: setblock @loop netherrack
-  scoreboard players test LOOP$loops loopCounter 0 0
-  ?: setblock @done redstone_block
-  scoreboard players test LOOP$loops loopCounter 1 *
-  ?: scoreboard players remove LOOP$loops loopCounter 1
-  ?: setblock @body redstone_block
-  #glass
-  @body
-  #quartz_ore
-  i0: setblock @body netherrack
-  !main()
-  setblock @loop redstone_block
-  #glass
-  @done
-  #quartz_ore
-  i0: setblock @done netherrack
-
-i0:
-say before main
-!loop(5):
-  say before nested
-  !loop(3):
-    say in nested
-  say after nested
-say after main
-
-`)
-console.dir(stack)
-stack = p.handleLabels(stack)
-console.dir(stack)
-console.log(CBU.summonStack(stack))
-*/

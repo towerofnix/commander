@@ -1,0 +1,6 @@
+[submodule "pre-fixer.js"]
+	path = pre-fixer.js
+	url = https://github.com/liam4/pre-fixer.js.git
+[submodule "editor/pre-fixer.js"]
+	path = editor/pre-fixer.js
+	url = https://github.com/liam4/pre-fixer.js

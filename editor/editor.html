@@ -6,8 +6,191 @@
     <link rel='stylesheet' href='editor.css'>
   </head>
   <body>
-    <div id='foo'>
-      <div id='main'>
+    <div id='help'>
+      <p>Need help or info? Hover!</p>
+      <h1>Initial Commit</h1>
+      <p>This is an experimental project designed to make creating command block creations much easier and robust.</p>
+      <p>It was <em>very</em> much inspired in many ways by <a href='http://commandstudio.github.io/commandstudio/' target='_blank'>CommandStudio</a>.</p>
+
+      <h1 id='documentation'>Documentation</h1>
+
+      <h2 id='getting-started'>Getting Started</h2>
+      <p>I could write a big spec here but I tried that and it wasn't very fun.</p>
+      <p>Generally each line of a program represents a command block. Huge simplification but that's all you need to know to get started! Try putting this code in the editor, for example:</p>
+      <pre contenteditable><code>
+        i0: say This is a line of code!
+        say It'll get compiled into a command block.
+        say Oh, that was another line of code.
+      </code></pre>
+      <p>In the editor, press <code>Ctrl+Enter</code> to compile your program. The output textarea at the bottom of the screen will be selected for you to copy a command from.</p>
+      <p>Oh, and I'm assuming you have experience with three things as I write this tutorial:</p>
+      <ol>
+        <li><a href='https://minecraft.net/'>Minecraft</a> - if you don't have experience with this.. this project really isn't for you.</li>
+        <li><a href='http://minecraft.gamepedia.com/Command_Block'>Command blocks</a> - if you don't have experience with these, you should probably learn command blocks. But the gist is they're blocks you use to script your Minecraft world. They're what are used for most of the awesome huge adventure maps you see.</li>
+        <li>Ideally some programming. This isn't too much different from a language like JavaScript or Python so if you have an idea of how either of to use either of those you should be good.</li>
+      </ol>
+      <p>You really don't need much knowledge about redstone because this project basically discourages the use of it. And it's not like you even <em>can</em> use redstone here, so..</p>
+      <p>With that out of the way you should get yourself a command block.</p>
+      <p>Chances are if you're reading this paragraph you're somebody who stuobbornly decided to follow along despite not knowing how to get a command block. Just type in <code>/give @p command_block</code> in the Minecraft chat.</p>
+      <p>Inside of the command block, paste the string you got in the output textarea.</p>
+      <p>Get your command block activated somehow. Try to avoid having anything above or to the east of the command block. That messes things up.</p>
+      <p>With any luck a big stack of command blocks will be forming!</p>
+      <p>After the thing is finished being made, activate the bottom command block. Make sure you don't activate the command block you used to summon this thing.</p>
+      <p>You should get some unsurprising output in the chat:</p>
+      <pre><code>
+        This is a line of code!
+        It'll get compiled into a command block.
+        Oh, that was another line of code.
+      </code></pre>
+      <p>Congratulations, you've made your first program.</p>
+
+      <h2 id='functions-and-procedures'>Functions (and Procedures)</h2>
+      <p>Functions are pieces of code that you'll end up re-using later on. You don't need to re-type the definition of a function every time you want to use one, which is pretty useful. They can also take arguments. Here's an example:</p>
+      <pre contenteditable><code>
+        define greet(x)
+          Hello, $x
+
+        say ^greet(world)
+      </code></pre>
+      <p>That'll get compiled to this (basically):</p>
+      <pre><code>
+        say Hello, world
+      </code></pre>
+      <p>Not too surprising? That's a function call. You can also have procedure calls, which are the same thing but not inline. They work with multiple lines of code in the definition:</p>
+      <pre contenteditable><code>
+        define lecture(who)
+          say Hello, $who
+          say Now we shall start our math lecture..
+          say (time passes)
+
+        !lecture(class)
+      </code></pre>
+      <p>That gets compiled to this:</p>
+      <pre><code>
+        say Hello, class
+        say Now we shall start our math lecture..
+        say (time passes)
+      </code></pre>
+      <p>Oh, and functions/procedures (from here on, functions) can take functions as an argument! Handy for making control structures:</p>
+      <pre contenteditable><code>
+        define conversation(responseFn)
+          say Hello! How do you do?
+          !responseFn()
+          say Why, that's astonishing - I have no response!
+
+        !conversation():
+          say I'm doing well.
+      </code></pre>
+      <p>That gets compiled to this:</p>
+      <pre><code>
+        say Hello! How do you do?
+        say I'm doing well.
+        say Why, that's astonishing - I have no response!
+      </code></pre>
+      <p>Not too complicated, but pretty powerful! (Think of things like runtime loops using scoreboard variables.)</p>
+
+      <h2 id='variables'>Variables</h2>
+      <p><strong>Variables</strong> are pieces of data that can be modified during compile time and inserted into other pieces of your code. If you've ever programmed before you really don't need much of an explanation, besides the syntax:</p>
+      <pre contenteditable><code>
+        =name Liam
+        say Hello, $name
+      </code></pre>
+      <p>So the syntax is <code>=NAME VALUE</code>. Not too complicated, right?</p>
+      <p>As you might expect, trying to access a variable that doesn't exist will throw you an error:</p>
+      <pre contenteditable><code>
+        // Error!
+        say $nonexistant
+      </code></pre>
+      <p>The rest is for the more technical, so you've been warned!</p>
+      <p><strong>Functions only have access to previously declared variables.</strong> For example:</p>
+      <pre contenteditable><code>
+        define foo()
+          say $x
+
+        =x abc
+
+        // Variable doesn't exist, error.
+        !foo()
+      </code></pre>
+      <p><strong><code>=</code> will always try to change a variable, rather than createone.</strong> This is only really noticable with functions. For example:</p>
+      <pre contenteditable><code>
+        =x hi
+
+        define showX()
+          say x = $x
+
+        !showX()
+        // x = hi
+
+        =x 15
+        !showX()
+        // x = 15
+      </code></pre>
+      <p>This lets us create a basic increment function (using the <a href='#builtin-functions'>builtin function</a> <code>add</code>):</p>
+      <pre contenteditable><code>
+        =x 0
+
+        define incrementXAndShow()
+          =x ^add($x, 1)
+          say x = $x
+
+        !incrementXAndShow()
+        // x = 1
+
+        !incrementXAndShow()
+        // x = 2
+
+        =x 15
+        !incrementXAndShow()
+        // x = 16
+      </code></pre>
+
+      <h2 id='builtin-functions'>Builtin Functions</h2>
+      <p><strong>Builtin functions</strong> (a.k.a. dark magic functions) are more powerful functions generally used to modify variables. For example:</p>
+      <pre contenteditable><code>
+        say ^add(7, 3)
+        // 10
+
+        say ^chars(^random(), 1, 3)
+        // some random 3 digit number
+      </code></pre>
+      <!-- TODO: Make a full reference.. -->
+
+      <h2 id='labels-and-blocks'>Labels and Blocks</h2>
+      <p><strong>Labels</strong> are one of the most helpful things of this project. The simplest way to describe it is as a "goto". Labels represent positions in a stack, and you can manipulate <strong>blocks</strong> with them. Here's an example:</p>
+      <pre contenteditable><code>
+        i0: say A
+        setblock @b redstone_block
+        #glass
+
+        @c
+        #quartz_ore
+        i0: say C
+        #glass
+
+        @b
+        #quartz_ore
+        i0: say B
+        setblock @c redstone_block
+        #glass
+      </code></pre>
+      <p>What do you think this will do? Here's your answer:</p>
+      <ol>
+        <li>Say "A".</li>
+        <li>Activate B by replacing the respective <code>quartz_ore</code> block with a <code>redstone_block</code>.</li>
+        <li>From B, say "B".</li>
+        <li>From B, activate C in the same way as B was activated (but for C instead, of course!).</li>
+        <li>From C, say "C".</li>
+      </ol>
+      <p>It's important to note this happens over the course of three ticks. B will only be activated by the redstone block on the tick after the redstone block is placed, and the same thing for C.</p>
+      <p>Now, what's with the glass and quartz ore everywhere?</p>
+      <p>You might have guessed by looking at the code that <code>#</code> represents a block. The code after it (on the same line) represents the block that should be placed. Easy.</p>
+      <p>I like to use <code>quartz_ore</code> because it looks similar to a <code>netherrack</code>, which in turn looks sort of like a "dead" <code>redstone_block</code>. The quartz ore blocks get replaced by redstone blocks to activate the respective section. Normally, I'd then replace the new redstone blocks with <code>netherrack</code>, but for this example it's not neccessary.</p>
+      <p>The <code>glass</code> is to separate the sections, so that the redstone block doesn't accidentally trigger something else.</p>
+      <p>Still not convinced that labels aren't useful? Maybe you should check out <a href='https://gist.github.com/liam4/0c95dc978b81006940112ef7c8dc042d' target='_blank'>this loop-n-times procedure I made</a>!</p>
+    </div>
+    <div id='main'>
+      <div id='input-flux'>
         <div id='input-container'>
           <textarea id='input' cols='80'></textarea>
         </div>
@@ -15,5 +198,7 @@
       <textarea id='output'></textarea>
     </div>
     <script src='editor.js'></script>
+    <script src='pre-fixer.js/prefixer.js'></script>
+    <script>prefix()</script>
   </body>
 </html>

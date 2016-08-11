@@ -6,13 +6,14 @@ body, html {
 }
 
 body {
-  background: #E9E9E9;
+  font-family: "Helvetica Neue";
+  background: #979797;
 }
 
-#main {
+#input-flux {
   display: flex;
-  background: #979797;
   height: 100%;
+  width: 100%;
   justify-content: center;
 }
 
@@ -40,14 +41,72 @@ body {
   background: white;
 }
 
-#foo {
+#main {
   width: 100%;
   height: 100%;
   display: flex;
   flex-direction: column;
+  padding-top: 30px;
+  box-sizing: border-box;
 }
 
 #foo > textarea {
   border: 0;
   box-shadow: 0 0 8px rgba(0, 0, 0, 0.3);
+}
+
+#help {
+  background: rgba(255, 255, 255, 0.9);
+  z-index: 99;
+  box-shadow: 0 0 3px rgba(0, 0, 0, 0.3);
+  padding: 5px;
+  height: 30px;
+  line-height: 20px;
+  font-size: 14px;
+  box-sizing: border-box;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  transition: height 0.3s;
+  overflow-y: scroll;
+
+  color: #222;
+}
+
+#help:hover {
+  height: 80vh;
+}
+
+p {
+  margin-top: 0;
+}
+
+pre {
+  background: #DDD;
+  border: 1px solid #777;
+  border-radius: 3px;
+  padding: 3px;
+}
+
+h2 {
+  color: #555;
+}
+
+pre[contenteditable] {
+  animation: preglow 1s infinite;
+}
+
+@keyframes preglow {
+  0% {
+    background: #DDD;
+  }
+
+  50% {
+    background: #E4E4E4;
+  }
+
+  100% {
+    background: #DDD;
+  }
 }
