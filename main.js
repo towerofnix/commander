@@ -108,6 +108,10 @@ class Program {
   }
 
   compile(code, environment = {vars: {}}) {
+    if (code.length === 0) {
+      return []
+    }
+
     const lines = code.split('\n')
     const results = []
 

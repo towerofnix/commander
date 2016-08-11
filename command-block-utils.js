@@ -63,32 +63,15 @@ const CBU = {
 
       if (blocks.length > 1) {
         ret.Passengers = [helper(blocks.slice(1))]
-      } else {
-        // Disabled for now.. not that these are being used yet.
-        // Will have to see if this should be enabled by default or not.
-        // Block labels - see ideas - might make this not super useful lol.
-        // For example:
-        //
-        //    @START
-        //    i0: say hi
-        //    say foo
-        //
-        //    i1: blockdata @START {auto: true}
-        //
-
-        // ret.Passengers = [{
-        //   id: 'FallingSand', Time: 1, Block: 'command_block', Data: 2,
-        //   TileEntityData: {
-        //     auto: true,
-        //     Command: `blockdata ~ ~-${blockStack.length} ~ {auto: true}`
-        //   }
-        // }]
       }
 
       return ret
     }
 
-    const stackData = helper(blockStack)
+    let stackData
+    if (blockStack.length) {
+      stackData = helper(blockStack)
+    }
 
     const dataTag = {
       Time: 1, Block: 'command_block', Data: 2,
