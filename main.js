@@ -118,6 +118,7 @@ class Program {
     LINE_LOOP:
     for (let lineIndex = 0; lineIndex < lines.length; lineIndex++) {
       let line = lines[lineIndex]
+      console.log('hi')
 
       if (line === '' || line.startsWith('//'))
         continue
@@ -177,7 +178,7 @@ class Program {
           lineIndex++
           line = lines[lineIndex]
 
-          if (lineIndex > lines.length)
+          if (lineIndex >= lines.length)
             break
 
           if (!line.startsWith('  ') && line !== '') {
@@ -266,6 +267,12 @@ class Program {
           environment.vars[varName] = {value}
         }
         continue
+      }
+
+      const isNonWhitespace = !!(line.split(' ').filter(c => c !== ' ').length)
+      if (line.startsWith(' ') && isNonWhitespace) {
+        console.log(line.length)
+        throw new Error(`Unexpected whitespace: "${line}"`)
       }
 
       let attributeStr = ''
